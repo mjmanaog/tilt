@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--
+      Dark parent and a navy window background, so the window matches the app's ground from
+      the first frame instead of flashing the platform's light default.
+    -->
+    <style name="Theme.TILT" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/tilt_ground</item>
+        <item name="android:colorBackground">@color/tilt_ground</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+
+    <!--
+      The widget's quick-capture surface. Translucent and non-floating so the home screen keeps
+      rendering behind it: the point is that capture does not feel like leaving what you were doing.
+    -->
+    <style name="Theme.TILT.QuickCapture" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.55</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>
