@@ -1,17 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
+  Defaults to 4x1: a single strip, which is all this widget needs. It stays resizable, and the
+  layout switches to a stacked arrangement once there is height for one.
+
+  Sizes follow the launcher's cell formula, (70 * cells) - 30: 4 columns is 250dp, 1 row is 40dp.
+  targetCellWidth/Height are honoured from API 31; minWidth/minHeight are what API 30 uses.
+
   updatePeriodMillis is at the platform's 30-minute floor: it is what rotates the resurfaced
   entry over time. Writes also refresh the widget immediately, so it never looks frozen while
   the app is actually being used.
 -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/widget_description"
-    android:minWidth="180dp"
-    android:minHeight="110dp"
+    android:minWidth="250dp"
+    android:minHeight="40dp"
     android:targetCellWidth="4"
-    android:targetCellHeight="2"
-    android:minResizeWidth="140dp"
-    android:minResizeHeight="80dp"
+    android:targetCellHeight="1"
+    android:minResizeWidth="180dp"
+    android:minResizeHeight="40dp"
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="1800000"
     android:widgetCategory="home_screen"

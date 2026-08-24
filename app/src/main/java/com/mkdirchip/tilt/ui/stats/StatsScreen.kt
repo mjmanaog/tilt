@@ -59,9 +59,6 @@ fun StatsScreen(
     val palette = LocalTiltPalette.current
 
     Box(modifier = Modifier.fillMaxSize().background(palette.ground)) {
-        // Statistics is sparse enough to carry the ambient arcs.
-        AmbientArcs(modifier = Modifier.fillMaxSize())
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -155,9 +152,13 @@ private fun StreakRing(progress: Float, currentStreak: Int) {
     val sweepColors = TiltGradients.arcSweep()
 
     Box(
-        modifier = Modifier.fillMaxWidth().height(210.dp),
+        modifier = Modifier.fillMaxWidth().height(340.dp),
         contentAlignment = Alignment.Center,
     ) {
+        // Concentric with the ring, so the arcs echo it instead of crossing the screen. Confined
+        // to this box, they never run through the summary tiles or the calendar grid.
+        AmbientArcs(modifier = Modifier.matchParentSize())
+
         Canvas(modifier = Modifier.size(190.dp)) {
             val stroke = Stroke(width = 18.dp.toPx(), cap = StrokeCap.Round)
             val inset = stroke.width / 2

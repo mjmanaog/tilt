@@ -90,17 +90,17 @@ A minority of entry cards SHALL be rendered filled with the vivid accent instead
 
 ### Requirement: Ambient gradient arcs on sparse screens
 
-Large sweeping gradient arcs SHALL be used as an ambient backdrop on screens that are otherwise sparse — the statistics screen and empty states — and SHALL NOT be drawn behind the timeline card feed, where they would compete with card content.
+Large sweeping gradient arcs SHALL be used as an ambient backdrop on the statistics screen, which is otherwise sparse. They SHALL NOT be drawn behind the timeline card feed, where they would compete with card content, nor behind an empty state, where abstract decoration distracts from a message the user needs to read.
 
 #### Scenario: Arcs behind the statistics screen
 
 - **WHEN** the statistics screen is displayed
 - **THEN** sweeping gradient arcs are drawn behind its content
 
-#### Scenario: Arcs behind an empty state
+#### Scenario: No arcs behind an empty state
 
-- **WHEN** an empty state is displayed
-- **THEN** sweeping gradient arcs are drawn behind its message
+- **WHEN** either empty state is displayed
+- **THEN** no ambient arcs are drawn behind it
 
 #### Scenario: No arcs behind the feed
 
@@ -135,6 +135,31 @@ Changes of screen and changes of content SHALL be animated rather than swapped i
 
 - **WHEN** the capture surface is opened
 - **THEN** it animates into view rather than appearing abruptly
+
+### Requirement: Empty states are treated according to their meaning
+
+The two empty states SHALL be presented differently, because they mean different things. Where nothing has ever been captured, the system SHALL draw dimmed, non-interactive placeholder cards in the same staggered arrangement the feed uses, behind the prompt, so a first-time user can see the shape the timeline is about to take. Where entries exist but the active filters exclude all of them, the system SHALL present the message and the clear-filters action with no decorative backdrop at all.
+
+#### Scenario: First run previews the shape of the feed
+
+- **WHEN** the timeline is opened and nothing has ever been captured
+- **THEN** dimmed placeholder cards are drawn behind the prompt in the feed's staggered arrangement
+
+#### Scenario: Placeholders cannot be mistaken for entries
+
+- **WHEN** the first-run placeholders are displayed
+- **THEN** they carry no text, no date, and no labels
+- **AND** tapping one does nothing
+
+#### Scenario: The filtered empty state carries no decoration
+
+- **WHEN** the active filters exclude every entry
+- **THEN** neither placeholder cards nor arcs are drawn behind the message
+
+#### Scenario: The prompt stays legible over the placeholders
+
+- **WHEN** the prompt is displayed over the placeholders
+- **THEN** its contrast against whatever sits behind it is at least 4.5:1
 
 ### Requirement: Legibility over decoration
 

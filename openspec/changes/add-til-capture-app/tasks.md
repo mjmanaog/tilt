@@ -21,7 +21,7 @@
 - [x] 3.3 Define the gradients: the card brush (`#141B2D` → `#1C2540`), the accent card fill, the scroll-edge scrim, and the accent-to-cyan sweep used by arcs and the streak ring
 - [x] 3.4 Verify contrast against every surface the body and muted tones land on — the card gradient's lightest stop and the `#2F6BFF` accent fill — confirming the ≈4.8:1 white-on-accent figure and substituting a distinct on-accent tone if the muted tone fails
 - [x] 3.5 Set the type scale in `Type.kt` for a Spotify-like hierarchy — heavy, large headings against restrained foot metadata — keeping entry text the most prominent element on a card
-- [x] 3.6 Build the reusable ambient-arc backdrop as a `Canvas` of large-radius gradient arc strokes at low alpha, for use behind the stats screen and empty states only
+- [x] 3.6 Build the reusable ambient-arc backdrop as a `Canvas` of large-radius gradient arc strokes at low alpha, for use behind the stats screen only
 - [x] 3.7 Add `LocalReducedMotion`, reading `Settings.Global.ANIMATOR_DURATION_SCALE`, plus animation-spec helpers that collapse to instant or cross-fade when it is set
 - [x] 3.8 Update `res/values/themes.xml` and the launcher/system bar styling so the app window matches the navy ground with no light-theme flash on launch
 
@@ -33,9 +33,9 @@
 
 ## 5. Capture
 
-- [x] 5.1 Build the shared `CaptureContent` composable: multi-line text field, label field with suggestions from previously used labels, chips for attached labels, and a save action disabled while the text is blank or whitespace-only
+- [x] 5.1 Build the shared `CaptureContent` composable: multi-line text field, label field with suggestions from previously used labels, chips for attached labels, and a shared `CaptureSaveButton` — placed inline or pinned by the caller — disabled while the text is blank or whitespace-only
 - [x] 5.2 Build `CaptureViewModel` handling both new and existing entries — trimming surrounding whitespace while preserving interior line breaks, preserving the original capture timestamp on edit, and rejecting a blank save
-- [x] 5.3 Wire the in-app capture destination for creating a new entry and for editing an existing one, showing the entry's text in full with no clamp, and discarding changes when the user leaves without confirming
+- [x] 5.3 Wire the in-app capture destination for creating a new entry and for editing an existing one, showing the entry's text in full with no clamp, pinning the save action to the bottom edge within thumb reach, and discarding changes when the user leaves without confirming
 - [x] 5.4 Create `QuickCaptureActivity` hosting `CaptureContent`, with a translucent non-opaque theme, `excludeFromRecents`, `noHistory`, `adjustResize`, keyboard raised and field focused on entry, and finish-without-saving on outside tap or back
 - [x] 5.5 Verify on device that the home screen stays visible behind `QuickCaptureActivity` and that the app's timeline is never brought to the foreground by it
 - [x] 5.6 Animate the capture surface into view on both entry points
@@ -49,7 +49,7 @@
 - [x] 6.5 Add multi-select label filtering to the filter bar, sourced from the in-use labels query
 - [x] 6.6 Implement pure date-range bucketing functions (preset resolution and inclusive custom range) with unit tests covering the inclusive endpoints and the single-day range
 - [x] 6.7 Build `TimelineViewModel` combining date range and label selection into the filtered query — labels OR'd together, then AND'ed with the date range — defaulting to All with no labels on cold start and retaining selections across navigation
-- [x] 6.8 Implement the two distinct empty states over the ambient arc backdrop — no entries ever versus nothing matching the filters — with a clear-filters action on the latter that resets to All with no labels
+- [x] 6.8 Implement the two distinct empty states — dimmed placeholder cards previewing the feed when nothing has ever been captured, versus an undecorated message when the filters exclude everything — with a clear-filters action on the latter that resets to All with no labels
 - [x] 6.9 Add item animations for cards entering the feed and for filter-driven insertions, removals, and repositioning, falling back to a content cross-fade if `animateItem` misbehaves on staggered grids in this Compose version
 - [x] 6.10 Wire card tap to open the entry for editing, and a delete action offering an undo snackbar that restores the entry to its original position
 - [x] 6.11 Verify a new entry appears at the top of the feed with no manual refresh, that an entry under six lines shows with no ellipsis, and that a longer one clamps with an ellipsis and opens in full when tapped
@@ -72,18 +72,18 @@
 - [x] 8.3 Implement `provideGlance` to read one random entry from the repository, computing the random pick once per update so the widget cannot flicker between entries across recompositions
 - [x] 8.4 Implement the empty state — the "What did you learn today?" prompt in place of an entry — keeping the capture target functional
 - [x] 8.5 Wire the capture target to launch `QuickCaptureActivity` via `actionStartActivity`, and the displayed entry to open the app on that entry
-- [x] 8.6 Register the widget receiver and metadata in the manifest, with `updatePeriodMillis` at the 30-minute floor for rotation, plus a preview image and sensible default and minimum sizes
+- [x] 8.6 Register the widget receiver and metadata in the manifest, with `updatePeriodMillis` at the 30-minute floor for rotation, plus a preview image and a 4×1 default size (250dp × 40dp, with `targetCell*` for API 31+)
 - [x] 8.7 Call `updateAll` from the repository after every insert, update, and delete so the widget reflects saves from either surface
-- [x] 8.8 Implement responsive sizing so the layout adapts across supported widget sizes, truncating long entry text with a visible ellipsis and keeping the capture target reachable at the smallest size
+- [x] 8.8 Implement responsive sizing so the layout adapts across supported widget sizes — a single-row strip where there is no height to stack, the stacked arrangement above that — truncating long entry text with a visible ellipsis while keeping the date and the capture target visible at the smallest size
 - [x] 8.9 Verify on device: saving from the widget, saving in the app then seeing the widget refresh, deleting the displayed entry, editing the displayed entry, and deleting the last entry to return to the prompt
 
 ## 9. Verification
 
 - [x] 9.1 Run the full unit and instrumented test suites and confirm they pass
-- [ ] 9.2 Walk the scenarios in each spec file on a device and confirm each one behaves as written, noting any deviation rather than quietly accepting it
+- [x] 9.2 Walk the scenarios in each spec file on a device and confirm each one behaves as written, noting any deviation rather than quietly accepting it
 - [x] 9.3 Verify the app renders dark with the system set to light mode, and that no screen presents a light variant
 - [x] 9.4 Verify accent-filled cards keep the same treatment across scrolling away and back, across a filter change, and across an app restart
 - [x] 9.5 Verify at the largest system font scale that text grows, that cards clamp at six lines of the larger text rather than a fixed height, and that nothing is clipped or overlapped
-- [x] 9.6 Verify no ambient arcs are drawn behind the timeline feed, and that text over arcs on the stats and empty-state screens holds its contrast
+- [x] 9.6 Verify no ambient arcs are drawn behind the timeline feed or either empty state, and that text over the arcs on the stats screen and over the first-run placeholders holds its contrast
 - [x] 9.7 Verify with system animations turned off that transitions resolve instantly or as cross-fades and that every screen, control, and entry stays reachable
 - [x] 9.8 Confirm entries survive a force-stop and relaunch, and that capture, browsing, filtering, and stats all work with the device offline

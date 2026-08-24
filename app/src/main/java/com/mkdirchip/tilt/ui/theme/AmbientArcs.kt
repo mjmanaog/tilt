@@ -6,66 +6,64 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 
 /**
- * Sweeping gradient arcs, used behind the sparse screens — statistics and empty states — and
- * never behind the timeline feed, where they would compete with card text.
+ * Gradient arcs drawn **concentrically around the centre of whatever box they are placed in**, so
+ * when they sit behind the streak ring they read as a halo echoing it rather than as bands
+ * crossing the screen at an arbitrary angle.
  *
- * Decoration only: no layout role, one draw pass, and kept at a low alpha so text sitting over
- * it keeps its contrast against the ground.
+ * Every radius starts outside the ring itself, which keeps the arcs clear of the figure at the
+ * centre. They are decoration only: no layout role, one draw pass, low alpha.
  */
 @Composable
 fun AmbientArcs(
     modifier: Modifier = Modifier,
-    alpha: Float = 0.22f,
+    alpha: Float = 0.30f,
 ) {
-    val sweep = TiltGradients.arcSweep()
+    val sweepColors = TiltGradients.arcSweep()
 
     Canvas(modifier = modifier) {
-        val stroke = Stroke(width = 44.dp.toPx())
+        val centre = Offset(size.width / 2f, size.height / 2f)
+        val stroke = Stroke(width = 22.dp.toPx(), cap = StrokeCap.Round)
+        // Largest radius that still fits inside the box once the stroke is accounted for, so the
+        // arcs always end in a round cap rather than a hard edge where the canvas clips them.
+        val unit = (size.minDimension / 2f) - stroke.width
         val brush = Brush.linearGradient(
-            colors = sweep,
-            start = Offset(size.width * 0.1f, 0f),
-            end = Offset(size.width, size.height * 0.8f),
+            colors = sweepColors,
+            start = Offset(0f, size.height),
+            end = Offset(size.width, 0f),
         )
 
-        // Two concentric arcs anchored off the top-right, echoing the reference's rings.
-        val outer = size.minDimension * 1.15f
-        val inner = size.minDimension * 0.72f
+        // radius factor, start angle, sweep, relative alpha — staggered so the arcs read as one
+        // family rather than a set of concentric circles.
+        val rings = listOf(
+            Quad(0.72f, -150f, 130f, 1.00f),
+            Quad(0.86f, 25f, 105f, 0.70f),
+            Quad(1.00f, 160f, 78f, 0.45f),
+        )
 
-        drawArc(
-            brush = brush,
-            startAngle = 130f,
-            sweepAngle = 165f,
-            useCenter = false,
-            topLeft = Offset(size.width - outer * 0.55f, -outer * 0.45f),
-            size = Size(outer, outer),
-            style = stroke,
-            alpha = alpha,
-        )
-        drawArc(
-            brush = brush,
-            startAngle = 155f,
-            sweepAngle = 140f,
-            useCenter = false,
-            topLeft = Offset(size.width - inner * 0.9f, -inner * 0.15f),
-            size = Size(inner, inner),
-            style = stroke,
-            alpha = alpha * 0.7f,
-        )
-        // A third, low arc anchored bottom-left to balance the composition.
-        val low = size.minDimension * 0.9f
-        drawArc(
-            brush = brush,
-            startAngle = 300f,
-            sweepAngle = 150f,
-            useCenter = false,
-            topLeft = Offset(-low * 0.5f, size.height - low * 0.5f),
-            size = Size(low, low),
-            style = stroke,
-            alpha = alpha * 0.55f,
-        )
+        rings.forEach { (factor, start, sweep, relAlpha) ->
+            val r = unit * factor
+            drawArc(
+                brush = brush,
+                startAngle = start,
+                sweepAngle = sweep,
+                useCenter = false,
+                topLeft = Offset(centre.x - r, centre.y - r),
+                size = Size(r * 2f, r * 2f),
+                style = stroke,
+                alpha = alpha * relAlpha,
+            )
+        }
     }
 }
+
+private data class Quad(
+    val factor: Float,
+    val start: Float,
+    val sweep: Float,
+    val relAlpha: Float,
+)

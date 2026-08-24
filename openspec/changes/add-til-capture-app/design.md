@@ -126,11 +126,16 @@ Whether a card is accent-filled is a pure function of the entry's stored id — 
 
 *Alternatives considered:* a persisted `isAccent` flag (rejected — storage for a purely presentational fact); accenting today's entries so the blue means something (rejected by the user in favor of a neutral scatter, so the color carries no meaning that could mislead).
 
-### Ambient arcs are drawn on a Canvas, not composed from shapes
+### Ambient arcs are a halo around the streak ring
 
-The sweeping arcs behind the stats screen and empty states are drawn in a single `Canvas` as large-radius arc strokes carrying a gradient from `accent` to `accentPartner`, sitting behind content at low alpha. The streak figure uses the same technique: an arc stroke with a gradient and a white round cap at its leading end, lifted from `design-refs/img_1.png`.
+The arcs are drawn in a single `Canvas` as arc strokes carrying a gradient from `accent` to `accentPartner`, at low alpha. The streak figure uses the same technique: an arc stroke with a gradient and a white round cap at its leading end, lifted from `design-refs/img_1.png`.
 
-*Rationale:* they are decoration with no layout role, so a Canvas costs one draw pass and no measurement. Keeping them off the timeline — as `til-visual-system` requires — also means the feed's contrast guarantee never has to account for a varying backdrop behind text.
+Where they go took two corrections, both after looking at them on a device:
+
+- They are **concentric with the streak ring and confined to its box**, rather than drawn behind the whole screen. Full-screen arcs sat behind *scrolling* content, so they crossed the percentage numerals and cut a diagonal band through the calendar grid, and their apparent position changed as the screen scrolled. Orbiting the ring gives them a reason to be where they are.
+- Their radii derive from the box — `(minDimension / 2) - strokeWidth` — so every arc terminates in a round cap inside the canvas instead of being clipped into a hard straight edge at its bounds. The innermost radius still clears the ring itself, so nothing overlaps the figure.
+
+*Rationale:* they are decoration with no layout role, so a Canvas costs one draw pass and no measurement. Keeping them off the timeline and out of the empty states — as `til-visual-system` requires — also means those screens' contrast guarantees never have to account for a varying backdrop behind text.
 
 ### Navigation Compose for three destinations
 
@@ -153,6 +158,42 @@ Delete removes the row; the entity and its label associations are held in memory
 ### Testing approach
 
 Date-range bucketing and streak calculation are pure functions over `LocalDate` sets, unit-tested directly against the `til-stats` and `til-timeline` scenarios — including the ones easiest to get wrong (today-not-yet-captured, multiple entries in one day, longest streak surviving a break). DAO filter queries get instrumented tests. Label normalization gets unit tests for the case-collision scenarios. The visual system is verified by inspection plus a contrast check on the final palette.
+
+### Empty states are treated by meaning, not uniformly
+
+Both empty states initially shared one composable with the ambient arcs behind it. The arcs read as abstract decoration in the one place the screen has something to say, so the states were split:
+
+- **Nothing captured yet** draws dimmed, non-interactive placeholders in the feed's own staggered arrangement, with the prompt over a softened scrim. It answers "what is this screen for" by showing the shape the screen is about to take.
+- **Nothing matches the filters** is undecorated. Entries do exist; this is a dead end to back out of, and placeholders here would imply content that is not there.
+
+The scrim over the placeholders is deliberately not opaque, so the silhouette continues faintly behind the text rather than splitting the screen into two disconnected bands. That choice is compositional, not a legibility one: body text over the placeholder tone measures about 13:1, so contrast holds with or without it.
+
+### The widget defaults to a 4x1 strip, with a second layout for height
+
+The widget targets 4x1 — one row — because that is all it needs to do its two jobs, and a
+two-row block dominates a home screen for no gain. Below roughly 90dp of height it renders as a
+strip: entry, date, and capture target on a single line. Above that it uses the stacked
+arrangement, with the line budget growing as height allows.
+
+Sizing follows the launcher's cell formula, `(70 * cells) - 30`: 250dp wide for four columns,
+40dp tall for one row. `targetCellWidth`/`targetCellHeight` are honoured from API 31; `minWidth`
+and `minHeight` are what API 30 reads, so both are set.
+
+In the strip, the date is a **fixed-width sibling** of the entry text rather than appended to it.
+Concatenating them would let a long entry push the date past the ellipsis and out of view, which
+would break the requirement that the widget shows an entry *together with* its date. Giving the
+text the weight and the date its natural width makes the text the only thing that can truncate.
+
+### The in-app save action is pinned to the bottom edge
+
+The editor's fields sit at the top and its save button is pinned to the bottom, within thumb
+reach, rather than following the fields down the page — on a tall phone that left the primary
+action stranded mid-screen. The widget's overlay keeps its button inline, because that sheet is
+already bottom-anchored.
+
+`CaptureSaveButton` is therefore its own composable shared by both surfaces, and `CaptureContent`
+takes an `inlineSave` flag. The enabled/disabled rule stays derived from a single
+`CaptureUiState.canSave`, so the two placements cannot diverge on validation.
 
 ### Platform details that cost time
 
@@ -188,10 +229,8 @@ The build order matters more than deployment: add and verify dependencies first,
 - Whether the widget's default size and the number of body lines it shows before truncating want tuning after living with it on a real home screen.
 - Whether the stats screen should eventually compare a period against the previous one ("more than last week"). Deliberately out of scope now — the specs commit only to counts — and addable later without touching the data model.
 
-## Verification still outstanding
+## Verification note
 
-On-device verification ran on an API 30 emulator (the project's `minSdk`); the instrumented suite also passed once on API 35. One scenario group remains unconfirmed.
+On-device verification ran on an API 30 emulator (the project's `minSdk`); the instrumented suite also passed once on API 35. Every scenario across the five capabilities has now been observed on a device.
 
-**The widget has only been observed at its default 3×2 size.** `til-widget` also specifies behaviour when it is resized smaller: the layout adapting without clipping, a long entry truncating with an ellipsis rather than overflowing, and the capture target staying reachable at the smallest supported size. The implementation is in place — `SizeMode.Exact` with a `LocalSize`-driven line budget, and the budget was already tightened once because Glance clips the final line mid-glyph when asked for more lines than fit — but the resize itself could not be driven from here: Launcher3's resize handles do not respond to injected touch events (`draganddrop`, stepwise `motionevent`, and a slow `swipe` all left the widget's bounds unchanged), and its home screen is rotation-locked, so a size change could not be forced that way either.
-
-Confirming it takes a few seconds by hand: long-press the widget, drag the bottom handle up to the smallest size it allows, and check that the entry text ellipsises and the "Today I learned…" target is still tappable.
+One caveat on `til-widget`'s resize scenarios. The small-size behaviour — the single-row layout, the entry text ellipsising while its date survives, the capture target still tappable and opening capture with the keyboard raised — was confirmed by placing the widget at its 4x1 default, not by dragging its resize handles: Launcher3 ignores injected touch streams on those handles (`draganddrop`, stepwise `motionevent`, and a slow `swipe` all left the widget's bounds unchanged), and its home screen is rotation-locked. The rendering path is the same one a manual resize exercises — `SizeMode.Exact` recomposing against `LocalSize` — but the drag interaction itself has not been driven.

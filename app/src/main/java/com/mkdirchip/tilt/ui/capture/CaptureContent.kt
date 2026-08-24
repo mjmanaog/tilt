@@ -51,6 +51,11 @@ fun CaptureContent(
     onSave: () -> Unit,
     modifier: Modifier = Modifier,
     autoFocus: Boolean = false,
+    /**
+     * Whether the save button sits directly under the fields. The overlay wants it inline; the
+     * full-screen editor pins its own [CaptureSaveButton] to the bottom edge, within thumb reach.
+     */
+    inlineSave: Boolean = true,
 ) {
     val palette = LocalTiltPalette.current
     val focusRequester = remember { FocusRequester() }
@@ -150,23 +155,40 @@ fun CaptureContent(
             }
         }
 
-        Button(
-            onClick = onSave,
-            enabled = state.canSave,
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = palette.accent,
-                contentColor = palette.onAccent,
-                disabledContainerColor = palette.surfaceLift,
-                disabledContentColor = palette.muted,
-            ),
-        ) {
-            Text(
-                text = if (state.isEditing) "Save changes" else "Save",
-                style = MaterialTheme.typography.titleMedium,
-            )
+        if (inlineSave) {
+            CaptureSaveButton(state = state, onSave = onSave)
         }
+    }
+}
+
+/**
+ * The save action. Shared so that whether it sits inline or pinned to the bottom edge, the
+ * enabled/disabled rule stays the single one derived from [CaptureUiState.canSave].
+ */
+@Composable
+fun CaptureSaveButton(
+    state: CaptureUiState,
+    onSave: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val palette = LocalTiltPalette.current
+
+    Button(
+        onClick = onSave,
+        enabled = state.canSave,
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = palette.accent,
+            contentColor = palette.onAccent,
+            disabledContainerColor = palette.surfaceLift,
+            disabledContentColor = palette.muted,
+        ),
+    ) {
+        Text(
+            text = if (state.isEditing) "Save changes" else "Save",
+            style = MaterialTheme.typography.titleMedium,
+        )
     }
 }
 

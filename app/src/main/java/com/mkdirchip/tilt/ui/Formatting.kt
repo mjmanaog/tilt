@@ -18,3 +18,10 @@ private val widgetStampFormatter: DateTimeFormatter =
 /** The shorter stamp the widget shows under a resurfaced entry. */
 fun formatWidgetStamp(epochMillis: Long, zone: ZoneId = ZoneId.systemDefault()): String =
     Instant.ofEpochMilli(epochMillis).atZone(zone).format(widgetStampFormatter)
+
+private val stripStampFormatter: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("d MMM", Locale.getDefault())
+
+/** Shorter still, for the single-row widget where the date shares a line with the entry. */
+fun formatStripStamp(epochMillis: Long, zone: ZoneId = ZoneId.systemDefault()): String =
+    Instant.ofEpochMilli(epochMillis).atZone(zone).format(stripStampFormatter)

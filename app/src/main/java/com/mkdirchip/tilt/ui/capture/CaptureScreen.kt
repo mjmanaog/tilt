@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
@@ -42,6 +43,7 @@ fun CaptureScreen(
             .fillMaxSize()
             .background(palette.ground)
             .statusBarsPadding()
+            .navigationBarsPadding()
             .imePadding()
             .padding(horizontal = 18.dp),
     ) {
@@ -61,6 +63,8 @@ fun CaptureScreen(
 
         Spacer(Modifier.height(8.dp))
 
+        // Fields take the space above; the save action is pinned to the bottom edge so it stays
+        // within thumb reach instead of floating in the middle of a tall screen.
         CaptureContent(
             state = state,
             onTextChange = viewModel::onTextChange,
@@ -69,6 +73,15 @@ fun CaptureScreen(
             onRemoveLabel = viewModel::removeLabel,
             onSave = { viewModel.save(onSaved = onDone) },
             autoFocus = !state.isEditing,
+            inlineSave = false,
+        )
+
+        Spacer(Modifier.weight(1f))
+
+        CaptureSaveButton(
+            state = state,
+            onSave = { viewModel.save(onSaved = onDone) },
+            modifier = Modifier.padding(bottom = 20.dp),
         )
     }
 }

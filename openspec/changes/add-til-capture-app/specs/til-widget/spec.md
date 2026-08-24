@@ -140,3 +140,9 @@ The widget SHALL remain usable and legible across the sizes a user can resize it
 
 - **WHEN** the widget is at its smallest supported size
 - **THEN** the capture target is still present and tappable
+
+#### Scenario: A single row keeps both the entry and its date
+
+- **WHEN** the widget's height is too small to stack its content
+- **THEN** the entry, its capture date, and the capture target are laid out on one row
+- **AND** the entry text is the part that truncates, so the date stays visible

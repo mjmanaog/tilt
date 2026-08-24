@@ -39,8 +39,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.mkdirchip.tilt.ui.theme.AmbientArcs
 import com.mkdirchip.tilt.ui.theme.LocalReducedMotion
 import com.mkdirchip.tilt.ui.theme.LocalTiltPalette
 import com.mkdirchip.tilt.ui.theme.TiltGradients
@@ -127,19 +129,10 @@ fun TimelineScreen(
                 when {
                     state.loading -> Spacer(Modifier.fillMaxSize())
 
-                    state.entries.isEmpty() && !hasAnyEntries ->
-                        EmptyState(
-                            headline = "What did you learn today?",
-                            body = "Capture the first thing. The widget makes it a single tap.",
-                        )
+                    state.entries.isEmpty() && !hasAnyEntries -> FirstRunEmptyState()
 
                     state.entries.isEmpty() ->
-                        EmptyState(
-                            headline = "Nothing matches",
-                            body = "No entries fall inside these filters.",
-                            actionLabel = "Clear filters",
-                            onAction = viewModel::clearFilters,
-                        )
+                        NoMatchesEmptyState(onClear = viewModel::clearFilters)
 
                     else -> Feed(
                         state = state,
@@ -201,45 +194,120 @@ private fun Feed(
     }
 }
 
+/**
+ * Nothing has ever been captured. Dimmed placeholders trace the shape the feed will take, so the
+ * first screen shows what the app becomes rather than an empty field.
+ */
 @Composable
-private fun EmptyState(
-    headline: String,
-    body: String,
-    actionLabel: String? = null,
-    onAction: (() -> Unit)? = null,
-) {
+private fun FirstRunEmptyState() {
     val palette = LocalTiltPalette.current
 
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        // Empty states are sparse enough to carry the ambient arcs.
-        AmbientArcs(modifier = Modifier.fillMaxSize())
+    Box(modifier = Modifier.fillMaxSize()) {
+        GhostFeed(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(start = 14.dp, end = 14.dp, bottom = 96.dp)
+        )
+
+        // Keeps the prompt clear of the placeholders behind it.
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    // Not fully opaque: the placeholders stay faintly visible through it, so the
+                    // feed reads as one continuous shape rather than two disconnected bands.
+                    Brush.verticalGradient(
+                        0.20f to Color.Transparent,
+                        0.40f to palette.ground.copy(alpha = 0.90f),
+                        0.60f to palette.ground.copy(alpha = 0.90f),
+                        0.80f to Color.Transparent,
+                    )
+                )
+        )
 
         Column(
-            modifier = Modifier.padding(horizontal = 32.dp),
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(horizontal = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = headline,
+                text = "What did you learn today?",
                 style = MaterialTheme.typography.headlineLarge,
                 color = palette.onGround,
             )
             Spacer(Modifier.size(10.dp))
             Text(
-                text = body,
+                text = "Capture the first thing. The widget makes it a single tap.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = palette.muted,
             )
-            if (actionLabel != null && onAction != null) {
-                Spacer(Modifier.size(18.dp))
-                Text(
-                    text = actionLabel,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = palette.accentPartner,
-                    modifier = Modifier
-                        .background(palette.surface, RoundedCornerShape(50))
-                        .clickable(onClick = onAction)
-                        .padding(horizontal = 18.dp, vertical = 10.dp),
-                )
+        }
+    }
+}
+
+/**
+ * Entries exist, the filters just exclude them all. Deliberately undecorated: this is a dead end
+ * to back out of, not an invitation, and placeholders here would suggest content that is not there.
+ */
+@Composable
+private fun NoMatchesEmptyState(onClear: () -> Unit) {
+    val palette = LocalTiltPalette.current
+
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(
+            modifier = Modifier.padding(horizontal = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = "Nothing matches",
+                style = MaterialTheme.typography.headlineLarge,
+                color = palette.onGround,
+            )
+            Spacer(Modifier.size(10.dp))
+            Text(
+                text = "No entries fall inside these filters.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = palette.muted,
+            )
+            Spacer(Modifier.size(18.dp))
+            Text(
+                text = "Clear filters",
+                style = MaterialTheme.typography.titleMedium,
+                color = palette.accentPartner,
+                modifier = Modifier
+                    .background(palette.surface, RoundedCornerShape(50))
+                    .clickable(onClick = onClear)
+                    .padding(horizontal = 18.dp, vertical = 10.dp),
+            )
+        }
+    }
+}
+
+/** Non-interactive silhouettes of cards, in the same staggered two-column rhythm as the feed. */
+@Composable
+private fun GhostFeed(modifier: Modifier = Modifier) {
+    val columns = listOf(
+        listOf(156.dp, 92.dp, 132.dp, 108.dp),
+        listOf(104.dp, 172.dp, 88.dp, 148.dp),
+    )
+
+    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        columns.forEach { heights ->
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                heights.forEach { height ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(height)
+                            .clip(RoundedCornerShape(22.dp))
+                            .alpha(0.45f)
+                            .background(TiltGradients.card())
+                    )
+                }
             }
         }
     }

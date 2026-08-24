@@ -28,6 +28,7 @@ import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
+import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
@@ -37,6 +38,7 @@ import com.mkdirchip.tilt.R
 import com.mkdirchip.tilt.data.TilEntryEntity
 import com.mkdirchip.tilt.tiltContainer
 import com.mkdirchip.tilt.ui.capture.QuickCaptureActivity
+import com.mkdirchip.tilt.ui.formatStripStamp
 import com.mkdirchip.tilt.ui.formatWidgetStamp
 
 /** Extra carrying the entry the widget was showing, so the app can open it. */
@@ -80,6 +82,65 @@ class TiltWidget : GlanceAppWidget() {
 
 @Composable
 private fun WidgetBody(entry: TilEntryEntity?) {
+    // A 4x1 strip has no room to stack anything; above that the taller arrangement fits.
+    if (LocalSize.current.height < 90.dp) StripBody(entry) else StackedBody(entry)
+}
+
+/** The single-row layout: entry, its date, and a compact capture target, all on one line. */
+@Composable
+private fun StripBody(entry: TilEntryEntity?) {
+    Row(
+        modifier = GlanceModifier
+            .fillMaxSize()
+            .background(ImageProvider(R.drawable.widget_background))
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.Vertical.CenterVertically,
+    ) {
+        if (entry == null) {
+            Text(
+                text = "What did you learn today?",
+                style = TextStyle(
+                    color = ColorProvider(R.color.tilt_on_ground),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
+                maxLines = 1,
+                modifier = GlanceModifier.defaultWeight()
+                    .clickable(actionStartActivity(quickCaptureIntent())),
+            )
+        } else {
+            val openEntry = Intent(LocalContext.current, MainActivity::class.java)
+                .putExtra(EXTRA_ENTRY_ID, entry.id)
+            // The entry text absorbs the truncation; the date is a fixed-width sibling so it
+            // cannot be the thing that gets ellipsised away.
+            Text(
+                text = entry.text,
+                style = TextStyle(
+                    color = ColorProvider(R.color.tilt_on_ground),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                ),
+                maxLines = 1,
+                modifier = GlanceModifier.defaultWeight()
+                    .clickable(actionStartActivity(openEntry)),
+            )
+            Text(
+                text = "  ${formatStripStamp(entry.createdAtEpochMillis)}",
+                style = TextStyle(
+                    color = ColorProvider(R.color.tilt_muted),
+                    fontSize = 11.sp,
+                ),
+                maxLines = 1,
+            )
+        }
+        Spacer(GlanceModifier.width(10.dp))
+        CompactCaptureTarget()
+    }
+}
+
+/** The taller layout, once the widget has height for a stacked arrangement. */
+@Composable
+private fun StackedBody(entry: TilEntryEntity?) {
     val height = LocalSize.current.height
     // Widget space is fixed, so this is the one place entry text may be truncated. The budget is
     // deliberately conservative: asking for more lines than the space fits makes Glance clip the
@@ -112,6 +173,25 @@ private fun WidgetBody(entry: TilEntryEntity?) {
             CaptureTarget()
         }
     }
+}
+
+/** The strip's capture affordance: small, but a real tap target at the row's full height. */
+@Composable
+private fun CompactCaptureTarget() {
+    Text(
+        text = "+",
+        style = TextStyle(
+            color = ColorProvider(R.color.tilt_on_accent),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+        ),
+        maxLines = 1,
+        modifier = GlanceModifier
+            .cornerRadius(10.dp)
+            .background(ColorProvider(R.color.tilt_accent))
+            .clickable(actionStartActivity(quickCaptureIntent()))
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+    )
 }
 
 /** Shown when nothing has been captured yet. Tapping still opens capture. */
