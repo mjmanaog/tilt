@@ -20,15 +20,22 @@ A single home-screen widget tap opens a quick-capture overlay floating over your
 
 ### Timeline
 
-![Timeline view showing staggered card grid of entries with filters and labels](screenshots/timeline.png)
+<img src="screenshots/timeline.png" width="25%" alt="Timeline view showing staggered card grid of entries with filters and labels" />
 
 The timeline displays all captured entries in a responsive staggered grid. Filter by date range (All, Today, This week, This month, Custom) or by label. Cards show entry preview (6-line clamp), labels, date, and time. Blue accent cards draw the eye.
 
 ### Home-Screen Widget
 
-| Widget Rotating Entry | Widget - Different Entry |
-|---|---|
-| ![Home-screen widget displaying a past entry with quick-capture button](screenshots/widget-filled.png) | ![Home-screen widget showing a different rotating entry](screenshots/widget-resized.png) |
+<div style="display: flex; gap: 20px;">
+  <div>
+    <img src="screenshots/widget-filled.png" width="25%" alt="Home-screen widget displaying a past entry with quick-capture button" />
+    <p><em>Widget Rotating Entry</em></p>
+  </div>
+  <div>
+    <img src="screenshots/widget-resized.png" width="25%" alt="Home-screen widget showing a different rotating entry" />
+    <p><em>Widget - Different Entry</em></p>
+  </div>
+</div>
 
 The widget displays a rotating past entry at a glance, with the date and a blue quick-capture button ("Today I learned..."). One tap opens the translucent capture overlay, no navigation needed. The widget is **fully resizable** (Glance AppWidget) and automatically updates as entries change. Sweeping gradient arcs frame the content.
 
