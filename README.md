@@ -16,13 +16,25 @@ A single home-screen widget tap opens a quick-capture overlay floating over your
 - **Stats** — Streak tracking (consecutive days with entries) and weekly/monthly volume.
 - **Offline-first** — All data stored locally with Room. No cloud sync, no accounts.
 
+## Screenshots
+
+### App Screenshots
+
+| Timeline | Capture | Stats |
+|----------|---------|-------|
+| ![Timeline view showing staggered card grid of entries](screenshots/timeline.png) | ![Quick-capture overlay](screenshots/capture.png) | ![Stats screen showing streak and volume](screenshots/stats.png) |
+
+### Widget
+
+| Widget - Empty | Widget - With Entry |
+|---|---|
+| ![Home-screen widget prompting "What did you learn today?"](screenshots/widget-empty.png) | ![Home-screen widget displaying a random past entry](screenshots/widget-filled.png) |
+
+> To capture screenshots, run the app on an emulator and use: `adb shell screencap -p /sdcard/screenshot.png && adb pull /sdcard/screenshot.png ./screenshots/`
+
 ## Visual Design
 
 TILT follows a **dark navy aesthetic** with electric blue accents, inspired by minimalist financial & productivity apps. The design prioritizes instant access and playful discovery.
-
-### Design References
-
-![Design mockup showing card-based layout with dark theme, blue accents, and floating action button](design-refs/img.png)
 
 The visual direction:
 - **Palette:** Near-black navy ground (`#0a0e27`) with vivid electric blue (`#00d9ff`) accents
