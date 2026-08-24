@@ -16,6 +16,30 @@ A single home-screen widget tap opens a quick-capture overlay floating over your
 - **Stats** — Streak tracking (consecutive days with entries) and weekly/monthly volume.
 - **Offline-first** — All data stored locally with Room. No cloud sync, no accounts.
 
+## Visual Design
+
+TILT follows a **dark navy aesthetic** with electric blue accents, inspired by minimalist financial & productivity apps. The design prioritizes instant access and playful discovery.
+
+### Design References
+
+![Design mockup showing card-based layout with dark theme, blue accents, and floating action button](design-refs/img.png)
+
+The visual direction:
+- **Palette:** Near-black navy ground (`#0a0e27`) with vivid electric blue (`#00d9ff`) accents
+- **Cards:** Staggered grid layout with entry previews, labels, and metadata at the card foot
+- **Accent ratio:** Roughly one card in five filled with accent color for visual rhythm
+- **Motion:** Sweeping gradient arcs, animated transitions, and smooth list interactions
+- **Typography:** Heavy type hierarchy with prominent titles and supporting details
+
+### Home-Screen Widget
+
+The widget has two core jobs:
+
+1. **Quick-capture tap target** — Opens a translucent overlay activity floating over your home screen. Type, add labels, save. Dismiss by tapping outside.
+2. **Rotating entry display** — Shows a random past entry at a glance. Updates as entries change. When empty, prompts *"What did you learn today?"*.
+
+The widget is **fully resizable** (Glance AppWidget) and stays fresh as you capture from either the widget or the in-app editor.
+
 ## Building
 
 ### Prerequisites
