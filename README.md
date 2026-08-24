@@ -18,19 +18,11 @@ A single home-screen widget tap opens a quick-capture overlay floating over your
 
 ## Screenshots
 
-### App Screenshots
+### Timeline
 
-| Timeline | Capture | Stats |
-|----------|---------|-------|
-| ![Timeline view showing staggered card grid of entries](screenshots/timeline.png) | ![Quick-capture overlay](screenshots/capture.png) | ![Stats screen showing streak and volume](screenshots/stats.png) |
+![Timeline view showing staggered card grid of entries with filters and labels](screenshots/timeline.png)
 
-### Widget
-
-| Widget - Empty | Widget - With Entry |
-|---|---|
-| ![Home-screen widget prompting "What did you learn today?"](screenshots/widget-empty.png) | ![Home-screen widget displaying a random past entry](screenshots/widget-filled.png) |
-
-> To capture screenshots, run the app on an emulator and use: `adb shell screencap -p /sdcard/screenshot.png && adb pull /sdcard/screenshot.png ./screenshots/`
+The timeline displays all captured entries in a responsive staggered grid. Filter by date range (All, Today, This week, This month, Custom) or by label. Cards show entry preview (6-line clamp), labels, date, and time. Blue accent cards draw the eye.
 
 ## Visual Design
 
