@@ -24,6 +24,12 @@ A single home-screen widget tap opens a quick-capture overlay floating over your
 
 The timeline displays all captured entries in a responsive staggered grid. Filter by date range (All, Today, This week, This month, Custom) or by label. Cards show entry preview (6-line clamp), labels, date, and time. Blue accent cards draw the eye.
 
+### Home-Screen Widget
+
+![Home-screen widget displaying a past entry with quick-capture button](screenshots/widget-filled.png)
+
+The widget shows a rotating past entry at a glance, with the date at the top and a blue quick-capture button ("Today I learned..."). One tap opens the translucent capture overlay, no navigation needed. Sweeping gradient arcs frame the content.
+
 ## Visual Design
 
 TILT follows a **dark navy aesthetic** with electric blue accents, inspired by minimalist financial & productivity apps. The design prioritizes instant access and playful discovery.
