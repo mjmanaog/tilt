@@ -26,9 +26,11 @@ The timeline displays all captured entries in a responsive staggered grid. Filte
 
 ### Home-Screen Widget
 
-![Home-screen widget displaying a past entry with quick-capture button](screenshots/widget-filled.png)
+| Widget Rotating Entry | Widget - Different Entry |
+|---|---|
+| ![Home-screen widget displaying a past entry with quick-capture button](screenshots/widget-filled.png) | ![Home-screen widget showing a different rotating entry](screenshots/widget-resized.png) |
 
-The widget shows a rotating past entry at a glance, with the date at the top and a blue quick-capture button ("Today I learned..."). One tap opens the translucent capture overlay, no navigation needed. Sweeping gradient arcs frame the content.
+The widget displays a rotating past entry at a glance, with the date and a blue quick-capture button ("Today I learned..."). One tap opens the translucent capture overlay, no navigation needed. The widget is **fully resizable** (Glance AppWidget) and automatically updates as entries change. Sweeping gradient arcs frame the content.
 
 ## Visual Design
 
