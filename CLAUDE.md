@@ -1,65 +1,78 @@
 # CLAUDE.md
 
-Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
+Guidance for Claude Code in this repo.
 
-**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+## Guidelines
 
-## 1. Think Before Coding
+*Bias toward caution over speed; use judgment for trivial tasks.*
 
-**Don't assume. Don't hide confusion. Surface tradeoffs.**
+- **Think first**: state assumptions, surface tradeoffs, ask if unclear — don't pick silently among interpretations. Push back when a simpler approach exists.
+- **Simplicity**: minimum code for the task; no speculative abstractions, flexibility, or error handling for impossible cases.
+- **Surgical changes**: touch only what the task requires; match existing style; don't refactor or clean up unrelated code (mention dead code, don't delete it); only remove imports/vars your own change orphaned.
+- **Goal-driven**: turn tasks into verifiable checks (e.g., "fix bug" → reproduce with a test, then make it pass); state a short plan with a verify step per item on multi-step work.
 
-Before implementing:
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them - don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
+## Critical: never run bare `./gradlew`
 
-## 2. Simplicity First
+A sandboxed Gradle daemon writes into `.gradle/`/`app/build/`; macOS then ACL-locks those paths
+(`com.apple.macl`) to the sandbox, breaking the user's own Android Studio/Terminal builds
+(`fileHashes.lock (Operation not permitted)`) — and the attribute can't be cleared from inside
+the sandbox.
 
-**Minimum code that solves the problem. Nothing speculative.**
+Always redirect build output and cache outside the repo:
 
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- If you write 200 lines and it could be 50, rewrite it.
-
-Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
-
-## 3. Surgical Changes
-
-**Touch only what you must. Clean up only your own mess.**
-
-When editing existing code:
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it - don't delete it.
-
-When your changes create orphans:
-- Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
-
-The test: Every changed line should trace directly to the user's request.
-
-## 4. Goal-Driven Execution
-
-**Define success criteria. Loop until verified.**
-
-Transform tasks into verifiable goals:
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
-
-For multi-step tasks, state a brief plan:
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
+```sh
+R=/tmp/tiltbuild/$(date +%s)$$; mkdir -p "$R"
+cat > "$R/init.gradle" <<EOF
+gradle.beforeProject { p -> p.layout.buildDirectory.set(new File("$R/out/" + p.name)) }
+EOF
+./gradlew "$@" --init-script "$R/init.gradle" --project-cache-dir "$R/cache" --console=plain
 ```
 
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+If it already happened, fix from Terminal.app (not the sandbox): `pkill -f GradleDaemon; rm -rf .gradle app/build` (both gitignored).
 
----
+## Never touch signing/local config files
 
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+`*.jks` (keystore), `keys.properties` (signing credentials), and `local.properties` (local SDK
+path/secrets) must never be read, edited, or written — treat them as opaque even if asked.
+Enforced in `.claude/settings.json` (`permissions.deny`: `Read`/`Edit`/`Write` on all three); if
+one needs a value read or changed, ask the user to do it directly.
+
+## Commands
+
+(prefix all with the wrapper above)
+
+```bash
+./gradlew build
+./gradlew installDebug
+./gradlew test                                                    # unit tests (app/src/test)
+./gradlew test --tests "com.mkdirchip.tilt.ui.stats.StreakTest"   # single test class
+./gradlew connectedAndroidTest                                    # instrumented, needs device/emulator
+```
+
+## Architecture
+
+Single-module Android app (`com.mkdirchip.tilt`, minSdk 30, Compose, no DI framework).
+
+- **Repository-centric**: `TilRepository` is the sole read/write path (editor, timeline, stats,
+  widget). Writes trigger `onDataChanged` → `refreshTiltWidgets`, wired in `TiltApplication` so
+  the repository never imports UI/widget code. DI is hand-rolled via `Context.tiltContainer`
+  (lazy `database`/`repository`), since the Glance widget runs outside the Activity/ViewModel
+  graph.
+- **Single NavHost**: `MainActivity` hosts routes `timeline`/`stats`/`capture` (optional
+  `entryId`, absent = new entry). Screens get ViewModels via `factory(repository, ...)`. Widget
+  deep-links via the `EXTRA_ENTRY_ID` intent extra, consumed once via `LaunchedEffect`.
+- **Widget** (`widget/`): `TiltWidget` collects `repository.observeEntries()` inside composition
+  (not `provideGlance`) so a live session sees edits without Glance re-invoking `provideGlance`.
+  Layout (`StripBody`/`StackedBody`) switches on `LocalSize.current.height`. The capture button
+  opens `QuickCaptureActivity` (translucent overlay), never `MainActivity`.
+- **Domain rules**: labels normalized (trim/lowercase/dedupe) in `LabelNormalizer` before DB
+  write. Streak = consecutive *calendar days* with ≥1 entry, local timezone
+  (`ui/stats/Streak.kt`). `TilEntryEntity.localDate` (stamped at capture) drives date
+  filtering/streaks independently of `createdAtEpochMillis`.
+
+## Specs
+
+`openspec/changes/add-til-capture-app/`: `proposal.md` (scope, non-goals: no cloud sync/search/
+reminders/export), `design.md` (navy `#0a0e27` + blue `#00d9ff`), `specs/` per capability
+(`til-entry`, `til-timeline`, `til-stats`, `til-widget`, `til-visual-system`). Update via the
+`openspec-*` skills, not by hand.

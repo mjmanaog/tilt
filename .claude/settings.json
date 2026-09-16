@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(**/*.jks)",
+      "Read(**/keys.properties)",
+      "Read(**/local.properties)",
+      "Edit(**/keys.properties)",
+      "Edit(**/local.properties)",
+      "Write(**/keys.properties)",
+      "Write(**/local.properties)"
+    ]
+  }
+}
