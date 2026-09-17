@@ -1,7 +1,5 @@
 ---
-paths:
-  - "**/build.gradle.kts"
-  - "gradle/libs.versions.toml"
+paths: ["**/build.gradle.kts", "gradle/libs.versions.toml"]
 ---
 
 # Gradle build file conventions

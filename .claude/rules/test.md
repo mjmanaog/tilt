@@ -1,7 +1,5 @@
 ---
-paths:
-  - "app/src/test/**/*.kt"
-  - "app/src/androidTest/**/*.kt"
+paths: ["app/src/{test,androidTest}/**/*.kt"]
 ---
 
 # Test conventions
